@@ -1,20 +1,21 @@
-import config  from 'config'
-import express  from 'express'
-import http  from 'http'
+import config from 'config';
+import express from 'express';
+import http from 'http';
 
-import bootstrap from './bootstrap'
-import { log, normalizePort } from './../utils'
+import bootstrap from './bootstrap';
+import { log, normalizePort } from './../utils';
 
 const app = express();
 
 const start = async () => {
   log.info('Starting Server...');
-  
+
   const port = normalizePort(config.get('port'));
 
   app.set('port', port);
-  bootstrap(app);
   
+  bootstrap(app);
+
   const server = http.createServer(app);
 
   server.on('error', error => {
@@ -24,11 +25,11 @@ const start = async () => {
   });
 
   server.on('listening', () => {
-    const address = server.address();
-    log.info(`Server listening ${address.address}:${address.port}`);
+    const { address, port } = server.address();
+    log.info(`Server listening ${address}:${port}`);
   });
 
   server.listen(port);
 };
 
-export default start
+export default start;

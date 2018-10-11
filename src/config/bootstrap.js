@@ -2,7 +2,7 @@ import { Express } from 'express'
 import bodyParser from 'body-parser'
 
 import { log } from './../utils'
-import routes from '../routes'
+import routes from './../routes'
 
 /**
  *

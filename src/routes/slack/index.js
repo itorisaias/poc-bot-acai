@@ -1,30 +1,30 @@
-import express from 'express'
-import uuid from 'node-uid'
-
-import { log } from './../../utils'
+import express from 'express';
+import { log } from './../../utils';
+import { pedidos } from './../../controllers';
 
 const router = new express.Router();
-const pedidos = [];
 
 router.post('/slack/command/report', async (req, res) => {
   try {
-    const { channel_id, user_name, text, team_domain, channel_name } = req.body;
-    
-    pedidos.push({
-      channel_id,
-      user_name,
-      text,
-      timestemp: new Date(),
-      team_domain,
-      channel_name
-    })
-    
-    const response = {
-      response_type: 'in_channel',
-      channel: channel_id,
-      text: `Pedido :shaved_ice: ${text} :shaved_ice: realizado com sucesso  - ID do pedido: ${uuid()}`
-    };
-    return res.json(response);
+    const { channel_id, user_name, text } = req.body;
+    pedidos
+      .post({ user_name, text })
+      .then(result => {
+        const response = {
+          response_type: 'in_channel',
+          channel: channel_id,
+          text: `Pedido :shaved_ice: ${
+            result.text
+          } :shaved_ice: realizado com sucesso  - ID do pedido: ${result.id}`
+        };
+        return res.json(response);
+      })
+      .catch(error => {
+        log.error(error);
+        return res
+          .status(500)
+          .send("Something blew up. We're looking into it.");
+      });
   } catch (err) {
     log.error(err);
     return res.status(500).send("Something blew up. We're looking into it.");
@@ -38,7 +38,11 @@ router.post('/slack/command/pedidos', async (req, res) => {
     const response = {
       response_type: 'in_channel',
       channel: channel_id,
-      text: JSON.stringify(pedidos.map(pedido => `${pedido.user_name.split(".").join(" ")} - ${pedido.text}`))
+      text: JSON.stringify(
+        pedidos.map(
+          pedido => `${pedido.user_name.split('.').join(' ')} - ${pedido.text}`
+        )
+      )
     };
     return res.json(response);
   } catch (err) {
@@ -47,4 +51,4 @@ router.post('/slack/command/pedidos', async (req, res) => {
   }
 });
 
-export default router
+export default router;
